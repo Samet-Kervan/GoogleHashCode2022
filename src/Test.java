@@ -2,7 +2,7 @@
 public class Test {
 
 	public static void main(String[] args) {
-		HashCode pr1 = new HashCode("file.txt");
+		HashCode pr1 = new HashCode("a.txt");
 	}
 
 }
