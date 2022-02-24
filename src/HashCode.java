@@ -5,8 +5,10 @@ import java.util.Scanner;
 
 public class HashCode {
 	private LinkedList<Ctrb> cs;
+	private LinkedList<Project> projects;
 	public HashCode(String fileName) {
 		cs = new LinkedList<Ctrb>();
+		projects = new LinkedList<Project>();
 		readFile(fileName);
 	}
 	private void readFile(String fileName) {
@@ -29,9 +31,13 @@ public class HashCode {
 			for (int i = 0; i < Integer.parseInt(numbers[0]); i++) {
 				String str = sc.nextLine();
 				String[] pr = str.split(" ");
+				Project project = new Project(pr[0], Integer.parseInt(pr[1]), Integer.parseInt(pr[2]), Integer.parseInt(pr[3]));
 				for (int j = 0; j < Integer.parseInt(pr[4]); j++) {
-					
+					str = sc.nextLine();
+					String[] skill = str.split(" ");
+					project.addSkill(skill[0], Integer.parseInt(skill[1]));
 				}
+				projects.add(project);
 			}
 			sc.close();
 		} catch (FileNotFoundException e) {
