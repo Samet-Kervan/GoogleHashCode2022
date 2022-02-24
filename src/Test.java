@@ -2,9 +2,7 @@
 public class Test {
 
 	public static void main(String[] args) {
-		
-		// Merby den selamlar, geldi mi? 
-		// AAASDAFASDASDFAF
+		HashCode pr1 = new HashCode("file.txt");
 	}
 
 }

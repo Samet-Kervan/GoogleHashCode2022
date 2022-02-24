@@ -3,7 +3,9 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class HashCode {
-
+	public HashCode(String fileName) {
+		readFile(fileName);
+	}
 	private void readFile(String fileName) {
 		File file = new File(fileName);
 		try {
