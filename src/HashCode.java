@@ -4,7 +4,9 @@ import java.util.LinkedList;
 import java.util.Scanner;
 
 public class HashCode {
+	private LinkedList<Ctrb> cs;
 	public HashCode(String fileName) {
+		cs = new LinkedList<Ctrb>();
 		readFile(fileName);
 	}
 	private void readFile(String fileName) {
