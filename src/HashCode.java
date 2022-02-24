@@ -43,7 +43,7 @@ public class HashCode {
 			e.printStackTrace();
 		}
 		//sortedProjects.size() > 0
-		while(x < 20) {
+		while(x < 200) {
 			sortProject();
 			selectCtrb();
 			x++;
@@ -207,12 +207,7 @@ public class HashCode {
 						}
 					}
 					if (check) {
-						try {
-							writer.write(pr.name + "\n");
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
+						System.out.print(pr.name + "\n");
 						for (int j = 0; j < ele.length; j++) {
 							try {
 								writer.write(ele[j].name + " ");
@@ -220,14 +215,9 @@ public class HashCode {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
-
+							System.out.print(ele[j].name + " ");
 						}
-						try {
-							writer.write("\n");
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+						System.out.print("\n");
 						pr.addEmp(ele);
 						projectNames.add(pr.name);
 						empNo.add(ele.length);
