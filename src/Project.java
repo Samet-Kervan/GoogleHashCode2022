@@ -8,6 +8,7 @@ public class Project {
 	public int bestBefore;
 	public float sortPoint;
 	public boolean active;
+	public Ctrb[] emp;
 	public Project(String name, int remaining, int point, int bestBefore) {
 		this.name = name;
 		this.remaining = remaining;
@@ -30,5 +31,8 @@ public class Project {
 			}
 		}
 		return null;
+	}
+	public void addEmp(Ctrb[] emp) {
+		this.emp = emp;
 	}
 }
