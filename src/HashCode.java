@@ -13,6 +13,7 @@ public class HashCode {
 		readFile(fileName);
 		sortedProjects = new PriorityQueue<Project>();
 		sortProject();
+		selectCtrb();
 	}
 	private void readFile(String fileName) {
 		File file = new File(fileName);
@@ -55,6 +56,8 @@ public class HashCode {
 			prj.sortPoint = (float) prj.point/(bottom);
 			sortedProjects.add(projects.get(i),projects.get(i).sortPoint);
 		}
-		int x  = 5;
+	}
+	private void selectCtrb() {
+		
 	}
 }
