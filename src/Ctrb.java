@@ -3,11 +3,11 @@ import java.util.ArrayList;
 public class Ctrb {
 	public String name;
 	public ArrayList<Skill> skills;
-	public boolean isFree;
+	public boolean active;
 	public Ctrb(String name) {
 		this.name = name;
 		skills = new ArrayList<Skill>();
-		this.isFree = true;
+		this.active = false;
 	}
 	public void addSkill(String skillName, int value) {
 		Skill sk = searchSkill(skillName);

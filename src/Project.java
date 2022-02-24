@@ -7,11 +7,13 @@ public class Project {
 	public int point;
 	public int bestBefore;
 	public float sortPoint;
+	public boolean active;
 	public Project(String name, int remaining, int point, int bestBefore) {
 		this.name = name;
 		this.remaining = remaining;
 		this.point = point;
 		this.bestBefore = bestBefore;
+		this.active = false;
 		skills = new LinkedList<Skill>();
 	}
 	public void addSkill(String skillName, int value) {
