@@ -15,6 +15,8 @@ public class HashCode {
 	private ArrayList<String> projectNames;
 	private ArrayList<Integer> empNo;
 	private ArrayList<String> employess;
+	FileWriter writer;
+	File file = new File("output.txt");
 	public HashCode(String fileName) {
 		projectNames = new ArrayList<String>();
 		employess = new ArrayList<String>();
@@ -27,13 +29,37 @@ public class HashCode {
 		sortedProjects = new PriorityQueue<Project>();
 		sortProject();
 		int x = 0;
+		file = new File("output.txt");
+		try {
+			file.createNewFile();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			writer = new FileWriter(file);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		//sortedProjects.size() > 0
 		while(x < 20) {
 			sortProject();
 			selectCtrb();
 			x++;
 		}
-		writeFile();
+		try {
+			writer.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	private void readFile(String fileName) {
 		File file = new File(fileName);
@@ -57,7 +83,7 @@ public class HashCode {
 				}
 				cs.add(ctrb);
 			}
-			for (int i = 0; i < Integer.parseInt(numbers[0]); i++) {
+			for (int i = 0; i < Integer.parseInt(numbers[1]); i++) {
 				String str = sc.nextLine();
 				String[] pr = str.split(" ");
 				Project project = new Project(pr[0], Integer.parseInt(pr[1]), Integer.parseInt(pr[2]), Integer.parseInt(pr[3]));
@@ -181,6 +207,27 @@ public class HashCode {
 						}
 					}
 					if (check) {
+						try {
+							writer.write(pr.name + "\n");
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						for (int j = 0; j < ele.length; j++) {
+							try {
+								writer.write(ele[j].name + " ");
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+
+						}
+						try {
+							writer.write("\n");
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 						pr.addEmp(ele);
 						projectNames.add(pr.name);
 						empNo.add(ele.length);
