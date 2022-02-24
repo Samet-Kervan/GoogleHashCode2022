@@ -24,6 +24,7 @@ public class HashCode {
 					String[] skill = str.split(" ");
 					ctrb.addSkill(skill[0], Integer.parseInt(skill[1]));
 				}
+				cs.add(ctrb);
 			}
 			for (int i = 0; i < Integer.parseInt(numbers[0]); i++) {
 				String str = sc.nextLine();
