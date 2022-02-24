@@ -6,8 +6,8 @@ public class PriorityQueue<K> {
 	//Start of nested class
 	private class Element<K>{
 		private K content;
-		private int priority;
-		public Element(K content, int priority) {
+		private float priority;
+		public Element(K content, float priority) {
 			this.content = content;
 			this.priority = priority;
 		}
@@ -17,10 +17,10 @@ public class PriorityQueue<K> {
 		void setContent(K content) {
 			this.content = content;
 		}
-		int getPriority() {
+		float getPriority() {
 			return priority;
 		}
-		void setPriority(int priority) {
+		void setPriority(float priority) {
 			this.priority = priority;
 		}
 	}
@@ -32,7 +32,7 @@ public class PriorityQueue<K> {
 		//Returns the number of elements in the queue
 		return queue.size();
 	}
-	public void add(K k, int priority) {
+	public void add(K k, float priority) {
 		//Adds the given object to the list
 		Element<K> element = new Element<K>(k, priority);
 		if (queue.isEmpty()) {
@@ -42,7 +42,7 @@ public class PriorityQueue<K> {
 			boolean flag = false;
 			for (int i = 0; i < queue.size(); i++) {
 				//Tries to find a appropriate position for the given object based on its priority 
-				if (queue.get(i).getPriority() > element.getPriority()) {
+				if (queue.get(i).getPriority() < element.getPriority()) {
 					queue.add(i,element);
 					flag = true;
 					break;
@@ -81,7 +81,7 @@ public class PriorityQueue<K> {
 		}
 		return queue.remove(index).getContent();
 	}
-	public int getPriority(int index) {
+	public float getPriority(int index) {
 		//Returns the priority of the element in the given index
 		if (queue.isEmpty()) {
 			return -1;
@@ -91,7 +91,7 @@ public class PriorityQueue<K> {
 		}
 		return queue.get(index).getPriority();
 	}
-	public int getPriorityFirst() {
+	public float getPriorityFirst() {
 		//Returns the priority of the first element in the queue
 		if (queue.isEmpty()) {
 			return Integer.MAX_VALUE;

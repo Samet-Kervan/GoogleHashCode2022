@@ -6,10 +6,13 @@ import java.util.Scanner;
 public class HashCode {
 	private LinkedList<Ctrb> cs;
 	private LinkedList<Project> projects;
+	private PriorityQueue<Project> sortedProjects;
 	public HashCode(String fileName) {
 		cs = new LinkedList<Ctrb>();
 		projects = new LinkedList<Project>();
 		readFile(fileName);
+		sortedProjects = new PriorityQueue<Project>();
+		sortProject();
 	}
 	private void readFile(String fileName) {
 		File file = new File(fileName);
@@ -44,5 +47,14 @@ public class HashCode {
 			System.out.println("File does not exists. Try after fixing the problem");
 			System.exit(0);
 		}
+	}
+	public void sortProject() {
+		for (int i = 0; i < projects.size(); i++) {
+			Project prj = projects.get(i);
+			int bottom = prj.bestBefore * prj.remaining * prj.skills.size();
+			prj.sortPoint = (float) prj.point/(bottom);
+			sortedProjects.add(projects.get(i),projects.get(i).sortPoint);
+		}
+		int x  = 5;
 	}
 }

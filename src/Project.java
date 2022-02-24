@@ -6,6 +6,7 @@ public class Project {
 	public int remaining;
 	public int point;
 	public int bestBefore;
+	public float sortPoint;
 	public Project(String name, int remaining, int point, int bestBefore) {
 		this.name = name;
 		this.remaining = remaining;
