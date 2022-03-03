@@ -1,38 +1,38 @@
-import java.util.LinkedList;
 
 public class Project {
 	public String name;
-	public LinkedList<Skill> skills;
+	public DoubleLinkedList<Skill> skills;
 	public int remaining;
 	public int point;
 	public int bestBefore;
-	public float sortPoint;
+	public double sortPoint;
 	public boolean active;
 	public Ctrb[] emp;
+	public int[] idx;
 	public Project(String name, int remaining, int point, int bestBefore) {
 		this.name = name;
 		this.remaining = remaining;
 		this.point = point;
 		this.bestBefore = bestBefore;
 		this.active = false;
-		skills = new LinkedList<Skill>();
+		skills = new DoubleLinkedList<Skill>();
 	}
 	public void addSkill(String skillName, int value) {
-		Skill sk = searchSkill(skillName);
-		if (sk == null) {
-			sk = new Skill(skillName, value);
-			skills.add(sk);
-		}
+		Skill sk = new Skill(skillName, value);
+		skills.add(sk);
 	}
 	public Skill searchSkill(String skillName) {
-		for (int i = 0; i < skills.size(); i++) {
-			if (skills.get(i).name.equals(skillName)) {
-				return skills.get(i);
+		for (int i = 0; i < skills.getSize(); i++) {
+			if (skills.get(i).getContent().name.equals(skillName)) {
+				return skills.get(i).getContent();
 			}
 		}
 		return null;
 	}
 	public void addEmp(Ctrb[] emp) {
 		this.emp = emp;
+	}
+	public void addidx(int[] idx) {
+		this.idx = idx;
 	}
 }

@@ -1,115 +1,128 @@
 
-import java.util.LinkedList;
 public class PriorityQueue<K> {
-	//A generic priority queue class. Min priority, if an elements priority is bigger it will be in end.
-	private LinkedList<PriorityQueue<K>.Element<K>> queue;
-	//Start of nested class
-	private class Element<K>{
-		private K content;
-		private float priority;
-		public Element(K content, float priority) {
-			this.content = content;
-			this.priority = priority;
-		}
-		K getContent() {
-			return content;
-		}
-		void setContent(K content) {
-			this.content = content;
-		}
-		float getPriority() {
-			return priority;
-		}
-		void setPriority(float priority) {
-			this.priority = priority;
-		}
+	//A generic priority queue class. 
+	private PriorityQueueNode<K> head, rear;//Storing both the head and rear for simpler executions
+	private int size;//Number of elements currently on the list
+	//Sorting is decided by ascending boolean.
+	//True => ascending False => descending
+	private boolean ascending;
+	public PriorityQueue(boolean ascending) {
+		head = null;
+		rear = null;
+		size = 0;
+		this.ascending = ascending;
 	}
-	//End of nested class
-	public PriorityQueue() {
-		queue = new LinkedList<Element<K>>();
+	public PriorityQueueNode<K> getFirst() {
+		return head;
 	}
-	public int size() {
-		//Returns the number of elements in the queue
-		return queue.size();
+	public K getFirstContent() {
+		//Returns the contents of the first node
+		return head.getContent();
 	}
-	public void add(K k, float priority) {
-		//Adds the given object to the list
-		Element<K> element = new Element<K>(k, priority);
-		if (queue.isEmpty()) {
-			queue.add(element);
+	public int getSize() {
+		return size;
+	}
+	public void setSize(int size) {
+		this.size = size;
+	}
+	public boolean isAscending() {
+		return ascending;
+	}
+	public void add(K content, double priority) {
+		//Creates a node with the given content and priority and adds it to the list
+		PriorityQueueNode<K> node = new PriorityQueueNode<K>(content, priority);
+		add(node);
+	}
+	public void add(PriorityQueueNode<K> node) {
+		//Adds the given node to the list
+		if (head == null) {
+			//There is no element currently on the list
+			head = node;
+			rear = node;
+			size++;
 		}
 		else {
-			boolean flag = false;
-			for (int i = 0; i < queue.size(); i++) {
-				//Tries to find a appropriate position for the given object based on its priority 
-				if (queue.get(i).getPriority() < element.getPriority()) {
-					queue.add(i,element);
-					flag = true;
+			PriorityQueueNode<K> currentNode = head;
+			while(currentNode != null) {
+				if (currentNode.getPriority() < node.getPriority()) {
+					if (currentNode == head) {
+						head = node;
+					}
+					else {
+						currentNode.getBefore().setNext(node);
+						node.setBefore(currentNode.getBefore());
+					}
+					currentNode.setBefore(node);
+					node.setNext(currentNode);
 					break;
 				}
+				currentNode = currentNode.getNext();
 			}
-			if (!flag) {
-				//if the given objects priority is bigger than the entire queue 
-				queue.add(element);
+			if (currentNode == null) {
+				rear.setNext(node);
+				node.setBefore(rear);
+				rear = node;
 			}
+			size++;
 		}
 	}
-	public K get(int index) {
-		//Returns the contents of the given index. Does not removes.
-		if (queue.isEmpty()) {
-			return null;
-		}
-		if (index >= queue.size()) {
-			return null;
-		}
-		return queue.get(index).getContent();
-	}
-	public K getFirst() {
-		//Removes and returns the content of the first index
-		if (queue.isEmpty()) {
-			return null;
-		}
-		return queue.remove(0).getContent();
-	}
-	public K remove(int index) {
-		//Removes and returns the content of the given index
-		if (queue.isEmpty()) {
-			return null;
-		}
-		if (index >= queue.size()) {
-			return null;
-		}
-		return queue.remove(index).getContent();
-	}
-	public float getPriority(int index) {
-		//Returns the priority of the element in the given index
-		if (queue.isEmpty()) {
-			return -1;
-		}
-		if (index >= queue.size()) {
-			return -1;
-		}
-		return queue.get(index).getPriority();
-	}
-	public float getPriorityFirst() {
-		//Returns the priority of the first element in the queue
-		if (queue.isEmpty()) {
-			return Integer.MAX_VALUE;
-		}
-		return queue.get(0).getPriority();
-	}
-	public void updatePriority(K content, int newPriority) {
-		//Updates the nodes priority with the given content
-		if (!queue.isEmpty()) {
-			for (int i = 0; i < queue.size(); i++) {
-				Element<K> element  = queue.get(i);
-				if (element.getContent() == content) {
-					//Found the node
-					element = queue.remove(i);//Removing the element from queue to add again
-					add(content, newPriority);//Adding a new node to the list with the content and the updated priority
-					break;
-				}
+	public PriorityQueueNode<K> get(int index){
+		if (index < size) {
+			PriorityQueueNode<K> node = head;
+			for (int i = 0; i < index; i++) {
+				node = node.getNext();
 			}
+			return node;
 		}
+		return null;
+	}
+	public PriorityQueueNode<K> remove(int index){
+		//Removes and returns the node in the given index from the list
+		if (index < size) {
+			//Checking if the index is valid
+			PriorityQueueNode<K> node = head;
+			for (int i = 0; i < index; i++) {
+				//Searches and finds the node
+				node = node.getNext();
+			}
+			remove(node);
+			//Nodes before and next values are reset before returning
+			node.setBefore(null);
+			node.setNext(null);
+			return node;
+		}
+		return null;
+	}
+	public void remove(PriorityQueueNode<K> node){
+		//Removes the given node from the list
+		PriorityQueueNode<K> before = node.getBefore();
+		PriorityQueueNode<K> next = node.getNext();
+		try {
+			before.setNext(next);
+		} catch (NullPointerException e) {
+			head = next;
+		}
+		try {
+			next.setBefore(before);
+		} catch (NullPointerException e) {
+			rear = before;
+		}
+		size--;
+	}
+	public PriorityQueueNode<K> removeFirst(){
+		//Removes and returns the first node from the list
+		return remove(0);
+	}
+	public void updatePriority(int index, double priority) {
+		//Finds the node in the given index and updates its priority
+		PriorityQueueNode<K> node = get(index);
+		if (node != null) {
+			updatePriority(node, priority);
+		}
+	}
+	public void updatePriority(PriorityQueueNode<K> node, double priority) {
+		//Updates the priority of the given node on the list
+		remove(node);//Removes the node from the list
+		add(node.getContent(), priority);//Using add function. Adds a new node with the old nodes content and new priority
 	}
 }

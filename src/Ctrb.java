@@ -1,37 +1,23 @@
-import java.util.ArrayList;
+
 
 public class Ctrb {
 	public String name;
-	public ArrayList<Skill> skills;
+	public DIBHashTable<String,Skill> skills;
 	public boolean active;
 	public Ctrb(String name) {
 		this.name = name;
-		skills = new ArrayList<Skill>();
+		skills = new DIBHashTable<String,Skill>();
 		this.active = false;
 	}
 	public void addSkill(String skillName, int value) {
-		Skill sk = searchSkill(skillName);
-		if (sk == null) {
-			sk = new Skill(skillName, value);
-			skills.add(sk);
-		}
+		Skill sk = new Skill(skillName, value);
+		skills.put(skillName, sk);
 	}
 	public Skill searchSkill(String skillName) {
-		for (int i = 0; i < skills.size(); i++) {
-			if (skills.get(i).name.equals(skillName)) {
-				return skills.get(i);
-			}
-		}
-		return null;
+		return skills.getContent(skillName);
 	}
 	public void addPointToSkill(String skillName) {
 		Skill sk = searchSkill(skillName);
-		if (sk == null) {
-			sk = new Skill(skillName, 1);
-			skills.add(sk); 
-		}
-		else {
-			sk.value++;
-		}
+		sk.value++;
 	}
 }
