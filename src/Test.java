@@ -7,13 +7,13 @@ public class Test {
 		System.out.println("b");
 		pr1 = new HashCode("b.txt");
 		System.out.println("c");
-		 pr1 = new HashCode("c.txt");
+		pr1 = new HashCode("c.txt");
 		System.out.println("d");
-		 pr1 = new HashCode("d.txt");
+		pr1 = new HashCode("d.txt");
 		System.out.println("e");
-		 pr1 = new HashCode("e.txt");
+		pr1 = new HashCode("e.txt");
 		System.out.println("f");
-		 pr1 = new HashCode("f.txt");
+		pr1 = new HashCode("f.txt");
 	}
 
 }

@@ -6,24 +6,20 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class HashCode {
+	//After all the updates it still works slow.
 	private DoubleLinkedList<Ctrb> ctrbs;
-	private DoubleLinkedList<Ctrb> activeCtrbs;
 	private DoubleLinkedList<Project> projects;
 	private PriorityQueue<Project> sortedProjects;
 	private DIBHashTable<String,Skill> skills;
 	private ArrayList<String> projectPrint;
 	private ArrayList<Integer> noPrint;
 	private ArrayList<String> employePrint;
-	private int activeCtrbCount = 0;
 	private int dayCount = 0, nextCheck = 0;
-	private int doneCount = 0;
-	FileWriter writer;
 	public HashCode(String fileName) {
 		projectPrint = new ArrayList<String>();
 		employePrint = new ArrayList<String>();
 		noPrint = new ArrayList<Integer>();
 		ctrbs = new DoubleLinkedList<Ctrb>();
-		activeCtrbs = new DoubleLinkedList<Ctrb>();
 		skills = new DIBHashTable<String,Skill>();
 		projects = new DoubleLinkedList<Project>();
 		readFile(fileName);
@@ -46,8 +42,6 @@ public class HashCode {
 			nextCheck--;
 			if (nextCheck <= 0) {
 				nextCheck = checkProjects();
-				System.out.println("remaining: " + sortedProjects.getSize() + " day: " + dayCount 
-						+ " next: " + nextCheck + " done: " + doneCount);
 			}
 		}
 		String outFile = fileName.charAt(0)+ "o.txt";
@@ -160,13 +154,11 @@ public class HashCode {
 				DoubleLinkedListNode<Skill> skillNode = project.skills.getFirst();
 				flag = true;
 				doneFlag = true;
-				doneCount++;
 				Ctrb[] emps = project.emp;
 				for (int i = 0; i < emps.length; i++) {
 					Skill skill = skillNode.getContent();
 					Skill empSkill = emps[i].searchSkill(skill.name);
-					emps[i].active = false;
-					activeCtrbCount--;
+					ctrbs.add(emps[i]);
 					if (empSkill.value <= skill.value) {
 						empSkill.value++;
 					}
@@ -189,7 +181,7 @@ public class HashCode {
 		int nextCheck = Integer.MAX_VALUE;
 		while(prjNode != null) {
 			Project project = prjNode.getContent();
-			int timeToFinish = project.bestBefore - dayCount;
+			int timeToFinish = project.bestBefore - dayCount + project.point;
 			if (timeToFinish <= 0) {
 				PriorityQueueNode<Project>  nextNode = prjNode.getNext();
 				sortedProjects.remove(prjNode);
@@ -207,63 +199,70 @@ public class HashCode {
 	private boolean searchCtrb() {
 		boolean flag = false;
 		PriorityQueueNode<Project> prjNode = sortedProjects.getFirst();
-		while(prjNode != null) {
+		while(prjNode != null && ctrbs.getSize() > 0) {
 			boolean projectDone = true;
 			Project prj = prjNode.getContent();
+			if (prj.skills.getSize() > ctrbs.getSize()) {
+				prjNode = prjNode.getNext();
+				continue;
+			}
 			Ctrb[] emp = new Ctrb[prj.skills.getSize()];
 			DoubleLinkedListNode<Skill> searchSkillNode = prj.skills.getFirst();
 			int index = 0;
-			if (ctrbs.getSize() - activeCtrbCount >=  emp.length) {
-				while(searchSkillNode != null) {
-					if (emp[index] == null) {
-						Skill searchingSkill = searchSkillNode.getContent();
-						Ctrb ctrb = findPerfectCtrb(searchingSkill);
+			while(searchSkillNode != null) {
+				if (emp[index] == null) {
+					Skill searchingSkill = searchSkillNode.getContent();
+					//Commented out algorithm takes too long to finish
+					/*Ctrb ctrb = findPerfectCtrb(searchingSkill);
+					if (ctrb != null) {
+						emp[index] = ctrb;
+					}
+					else {
+						ctrb = findMentorCtrb(prj,emp,searchingSkill,index);
 						if (ctrb != null) {
-							ctrb.active = true;
 							emp[index] = ctrb;
 						}
 						else {
-							ctrb = findMentorCtrb(prj,emp,searchingSkill,index);
+							ctrb = findOverCtrb(searchingSkill);
 							if (ctrb != null) {
-								ctrb.active = true;
 								emp[index] = ctrb;
 							}
 							else {
-								ctrb = findOverCtrb(searchingSkill);
-								if (ctrb != null) {
-									ctrb.active = true;
-									emp[index] = ctrb;
+								for (int i = 0; i < index; i++) {
+									ctrbs.add(emp[i]);
 								}
-								else {
-									for (int i = 0; i < index; i++) {
-										emp[i].active = false;
-									}
-									projectDone = false;
-									break;
-								}
+								projectDone = false;
+								break;
 							}
 						}
+					}*/
+					Ctrb ctrb = greedyFind(searchingSkill);
+					if (ctrb != null) {
+						emp[index] = ctrb;
 					}
-					index++;
-					searchSkillNode = searchSkillNode.getNext();
-				}
-				if (projectDone) {
-					//System.out.println(prj.name);
-					projectPrint.add(prj.name);
-					noPrint.add(emp.length);
-					for (int i = 0; i < emp.length; i++) {
-						employePrint.add(emp[i].name);
-						activeCtrbCount++;
+					else {
+						for (int i = 0; i < index; i++) {
+							ctrbs.add(emp[i]);
+						}
+						projectDone = false;
+						break;
 					}
-					prj.emp = emp;
-					projects.add(prj);
-					PriorityQueueNode<Project> next = prjNode.getNext();
-					sortedProjects.remove(prjNode);
-					prjNode = next;
 				}
-				else {
-					prjNode = prjNode.getNext();
+				index++;
+				searchSkillNode = searchSkillNode.getNext();
+			}
+			if (projectDone) {
+				//System.out.println(prj.name);
+				projectPrint.add(prj.name);
+				noPrint.add(emp.length);
+				for (int i = 0; i < emp.length; i++) {
+					employePrint.add(emp[i].name);
 				}
+				prj.emp = emp;
+				projects.add(prj);
+				PriorityQueueNode<Project> next = prjNode.getNext();
+				sortedProjects.remove(prjNode);
+				prjNode = next;
 			}
 			else {
 				prjNode = prjNode.getNext();
@@ -275,11 +274,23 @@ public class HashCode {
 		DoubleLinkedListNode<Ctrb> ctrbNode = ctrbs.getFirst();
 		while(ctrbNode != null) {
 			Ctrb ctrb = ctrbNode.getContent();
-			if (!ctrb.active) {
-				Skill ctrbSkill = ctrb.searchSkill(skill.name);
-				if (ctrbSkill.value == skill.value) {
-					return ctrb;
-				}
+			Skill ctrbSkill = ctrb.searchSkill(skill.name);
+			if (ctrbSkill.value == skill.value) {
+				ctrbs.remove(ctrbNode);
+				return ctrb;
+			}
+			ctrbNode = ctrbNode.getNext();
+		}
+		return null;
+	}
+	private Ctrb greedyFind(Skill skill) {
+		DoubleLinkedListNode<Ctrb> ctrbNode = ctrbs.getFirst();
+		while(ctrbNode != null) {
+			Ctrb ctrb = ctrbNode.getContent();
+			Skill ctrbSkill = ctrb.searchSkill(skill.name);
+			if (ctrbSkill.value >= skill.value) {
+				ctrbs.remove(ctrbNode);
+				return ctrb;
 			}
 			ctrbNode = ctrbNode.getNext();
 		}
@@ -295,11 +306,9 @@ public class HashCode {
 		DoubleLinkedListNode<Ctrb> ctrbNode = ctrbs.getFirst();
 		while(ctrbNode != null) {
 			Ctrb ctrb = ctrbNode.getContent();
-			if (!ctrb.active) {
-				Skill ctrbSkill = ctrb.searchSkill(skill.name);
-				if (ctrbSkill.value > skill.value) {
-					return ctrb;
-				}
+			Skill ctrbSkill = ctrb.searchSkill(skill.name);
+			if (ctrbSkill.value > skill.value) {
+				return ctrb;
 			}
 			ctrbNode = ctrbNode.getNext();
 		}
