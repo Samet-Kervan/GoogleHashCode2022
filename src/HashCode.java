@@ -3,37 +3,41 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
 import java.util.Scanner;
 
 public class HashCode {
 	//After all the updates it still works slow.
-	private DoubleLinkedList<Ctrb> ctrbs;
-	private DoubleLinkedList<Project> projects;
+	private LinkedList<Ctrb> ctrbs;
+	private LinkedList<Project> projects;
 	private PriorityQueue<Project> sortedProjects;
-	private DIBHashTable<String,Skill> skills;
+	private Hashtable<String,Skill> skills;
 	private ArrayList<String> projectPrint;
 	private ArrayList<Integer> noPrint;
 	private ArrayList<String> employePrint;
 	private int dayCount = 0, nextCheck = 0;
 	public HashCode(String fileName) {
+		skills = new Hashtable<String,Skill>();
 		projectPrint = new ArrayList<String>();
 		employePrint = new ArrayList<String>();
 		noPrint = new ArrayList<Integer>();
-		ctrbs = new DoubleLinkedList<Ctrb>();
-		skills = new DIBHashTable<String,Skill>();
-		projects = new DoubleLinkedList<Project>();
+		ctrbs = new LinkedList<Ctrb>();
+		projects = new LinkedList<Project>();
 		readFile(fileName);
 		addSkills();
-		skills = new DIBHashTable<String,Skill>();
-		sortedProjects = new PriorityQueue<Project>(true);
-		sortProject();
-		projects = new DoubleLinkedList<Project>();
+		skills = new Hashtable<String,Skill>();
+		sortedProjects = new PriorityQueue<Project>();
+		sortProjects();
+		projects = new LinkedList<Project>();
 		boolean done = true;
-		while(sortedProjects.getSize() > 0) {
+		while(sortedProjects.size() > 0) {
 			if (done) {
 				//System.out.println(projects.getSize() + " " + sortedProjects.getSize());
 				boolean flag = searchCtrb();
-				if (!flag && projects.getSize() == 0) {
+				if (!flag && projects.size() == 0) {
 					break;
 				}
 			}
@@ -110,207 +114,114 @@ public class HashCode {
 		}
 	}
 	public Skill searchSkill(String skillName) {
-		return skills.getContent(skillName);
+		return skills.get(skillName);
 	}
 	public void addSkills() {
-		DoubleLinkedListNode<Ctrb> node = ctrbs.getFirst();
-		while(node != null) {
-			Ctrb ctrb = node.getContent();
-			ArrayList<Skill> skls = skills.getAll();
-			for (int i = 0; i < skls.size(); i++) {
-				Skill skll = ctrb.searchSkill(skls.get(i).name);
+		Enumeration<String> keys = skills.keys();
+		while(keys.hasMoreElements()) {
+			String key = keys.nextElement();
+			for (Ctrb ctrb : ctrbs) {
+				Skill skll = ctrb.searchSkill(key);
 				if (skll == null) {
-					ctrb.addSkill(skls.get(i).name, 0);
+					ctrb.addSkill(key, 0);
 				}
 			}
-			node = node.getNext(); 
 		}
 	}
-	public void sortProject() {
-		DoubleLinkedListNode<Project> node = projects.getFirst();
-		while(node != null) {
-			Project prj = node.getContent();
-			double before = prj.bestBefore;
-			double remain = prj.remaining;
-			double size = prj.skills.getSize();
+	public void sortProjects() {
+		for(Project project: projects) {
+			double before = project.bestBefore;
+			double remain = project.remaining;
+			double size = project.skills.size();
 			double bottom = before * remain * size;
 			if (bottom <= 0) {
 				bottom = Double.MAX_VALUE;
 			}
-			prj.sortPoint = prj.point / bottom;
-			sortedProjects.add(prj, prj.sortPoint);
-			node = node.getNext();
+			project.sortPoint = project.point / bottom;
+			sortedProjects.add(project);
 		}
 	}
 	public boolean doProject() {
 		boolean flag = false;
-		//System.out.println("Current projects: " + projects.getSize());
-		DoubleLinkedListNode<Project> node = projects.getFirst();
-		while(node != null) {
-			boolean doneFlag = false;
-			Project project = node.getContent();
+		for(Project project: projects) {
 			project.remaining--;
-			if (project.remaining == 0) {
-				DoubleLinkedListNode<Skill> skillNode = project.skills.getFirst();
+			if(project.remaining == 0) {
 				flag = true;
-				doneFlag = true;
 				Ctrb[] emps = project.emp;
 				for (int i = 0; i < emps.length; i++) {
-					Skill skill = skillNode.getContent();
-					Skill empSkill = emps[i].searchSkill(skill.name);
+					Skill empSkill = emps[i].searchSkill(emps[i].currentSkill);
 					ctrbs.add(emps[i]);
-					if (empSkill.value <= skill.value) {
+					if (empSkill.value <= emps[i].currentSkillsPoint) {
 						empSkill.value++;
 					}
-					skillNode = skillNode.getNext();
 				}
-			}
-			if (doneFlag) {
-				DoubleLinkedListNode<Project> nodeNext = node.getNext();
-				projects.remove(node);
-				node = nodeNext;
-			}
-			else {
-				node = node.getNext();
 			}
 		}
 		return flag;
 	}
 	public int checkProjects() {
-		PriorityQueueNode<Project> prjNode = sortedProjects.getFirst();
 		int nextCheck = Integer.MAX_VALUE;
-		while(prjNode != null) {
-			Project project = prjNode.getContent();
+		Object[] projectsToCheck = sortedProjects.toArray();
+		for (int i = 0; i < projectsToCheck.length; i++) {
+			Project project = (Project) projectsToCheck[i];
 			int timeToFinish = project.bestBefore - dayCount + project.point;
 			if (timeToFinish <= 0) {
-				PriorityQueueNode<Project>  nextNode = prjNode.getNext();
-				sortedProjects.remove(prjNode);
-				prjNode = nextNode;
+				sortedProjects.remove(project);
 			}
 			else if(timeToFinish < nextCheck) {
 				nextCheck = timeToFinish;
-			}
-			else {
-				prjNode = prjNode.getNext();
 			}
 		}
 		return nextCheck;
 	}
 	private boolean searchCtrb() {
 		boolean flag = false;
-		PriorityQueueNode<Project> prjNode = sortedProjects.getFirst();
-		while(prjNode != null && ctrbs.getSize() > 0) {
+		Object[] projectsToSearch = sortedProjects.toArray();
+		for (int i = 0; i < projectsToSearch.length; i++) {
 			boolean projectDone = true;
-			Project prj = prjNode.getContent();
-			if (prj.skills.getSize() > ctrbs.getSize()) {
-				prjNode = prjNode.getNext();
+			Project prj = (Project) projectsToSearch[i];
+			if (prj.skills.size() > ctrbs.size()) {
 				continue;
 			}
-			Ctrb[] emp = new Ctrb[prj.skills.getSize()];
-			DoubleLinkedListNode<Skill> searchSkillNode = prj.skills.getFirst();
+			Ctrb[] emp = new Ctrb[prj.skills.size()];
 			int index = 0;
-			while(searchSkillNode != null) {
-				if (emp[index] == null) {
-					Skill searchingSkill = searchSkillNode.getContent();
-					//Commented out algorithm takes too long to finish
-					/*Ctrb ctrb = findPerfectCtrb(searchingSkill);
-					if (ctrb != null) {
-						emp[index] = ctrb;
+			for(Skill skill: prj.skills) {
+				Ctrb ctrb = greedyFind(skill);
+				if (ctrb != null) {
+					emp[index] = ctrb;
+				}
+				else {
+					for (int j = 0; j < index; j++) {
+						ctrbs.add(emp[j]);
 					}
-					else {
-						ctrb = findMentorCtrb(prj,emp,searchingSkill,index);
-						if (ctrb != null) {
-							emp[index] = ctrb;
-						}
-						else {
-							ctrb = findOverCtrb(searchingSkill);
-							if (ctrb != null) {
-								emp[index] = ctrb;
-							}
-							else {
-								for (int i = 0; i < index; i++) {
-									ctrbs.add(emp[i]);
-								}
-								projectDone = false;
-								break;
-							}
-						}
-					}*/
-					Ctrb ctrb = greedyFind(searchingSkill);
-					if (ctrb != null) {
-						emp[index] = ctrb;
-					}
-					else {
-						for (int i = 0; i < index; i++) {
-							ctrbs.add(emp[i]);
-						}
-						projectDone = false;
-						break;
-					}
+					projectDone = false;
+					break;
 				}
 				index++;
-				searchSkillNode = searchSkillNode.getNext();
 			}
 			if (projectDone) {
-				//System.out.println(prj.name);
+				flag = true;
 				projectPrint.add(prj.name);
 				noPrint.add(emp.length);
-				for (int i = 0; i < emp.length; i++) {
-					employePrint.add(emp[i].name);
+				for (int j = 0; j < emp.length; j++) {
+					employePrint.add(emp[j].name);
 				}
 				prj.emp = emp;
 				projects.add(prj);
-				PriorityQueueNode<Project> next = prjNode.getNext();
-				sortedProjects.remove(prjNode);
-				prjNode = next;
-			}
-			else {
-				prjNode = prjNode.getNext();
+				sortedProjects.remove(prj);
 			}
 		}
 		return flag;
 	}
-	private Ctrb findPerfectCtrb(Skill skill) {
-		DoubleLinkedListNode<Ctrb> ctrbNode = ctrbs.getFirst();
-		while(ctrbNode != null) {
-			Ctrb ctrb = ctrbNode.getContent();
-			Skill ctrbSkill = ctrb.searchSkill(skill.name);
-			if (ctrbSkill.value == skill.value) {
-				ctrbs.remove(ctrbNode);
-				return ctrb;
-			}
-			ctrbNode = ctrbNode.getNext();
-		}
-		return null;
-	}
 	private Ctrb greedyFind(Skill skill) {
-		DoubleLinkedListNode<Ctrb> ctrbNode = ctrbs.getFirst();
-		while(ctrbNode != null) {
-			Ctrb ctrb = ctrbNode.getContent();
+		for(Ctrb ctrb: ctrbs){
 			Skill ctrbSkill = ctrb.searchSkill(skill.name);
 			if (ctrbSkill.value >= skill.value) {
-				ctrbs.remove(ctrbNode);
+				ctrbs.remove(ctrb);
+				ctrb.currentSkill = skill.name;
+				ctrb.currentSkillsPoint = skill.value;
 				return ctrb;
 			}
-			ctrbNode = ctrbNode.getNext();
-		}
-		return null;
-	}
-	private Ctrb findMentorCtrb(Project prj, Ctrb[] emp, Skill searchingSkill, int index) {
-		if (index < emp.length) {
-			
-		}
-		return null;
-	}
-	private Ctrb findOverCtrb(Skill skill) {
-		DoubleLinkedListNode<Ctrb> ctrbNode = ctrbs.getFirst();
-		while(ctrbNode != null) {
-			Ctrb ctrb = ctrbNode.getContent();
-			Skill ctrbSkill = ctrb.searchSkill(skill.name);
-			if (ctrbSkill.value > skill.value) {
-				return ctrb;
-			}
-			ctrbNode = ctrbNode.getNext();
 		}
 		return null;
 	}

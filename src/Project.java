@@ -1,7 +1,8 @@
+import java.util.LinkedList;
 
-public class Project {
+public class Project implements Comparable<Project> {
 	public String name;
-	public DoubleLinkedList<Skill> skills;
+	public LinkedList<Skill> skills;
 	public int remaining;
 	public int point;
 	public int bestBefore;
@@ -15,16 +16,16 @@ public class Project {
 		this.point = point;
 		this.bestBefore = bestBefore;
 		this.active = false;
-		skills = new DoubleLinkedList<Skill>();
+		skills = new LinkedList<Skill>();
 	}
 	public void addSkill(String skillName, int value) {
 		Skill sk = new Skill(skillName, value);
 		skills.add(sk);
 	}
 	public Skill searchSkill(String skillName) {
-		for (int i = 0; i < skills.getSize(); i++) {
-			if (skills.get(i).getContent().name.equals(skillName)) {
-				return skills.get(i).getContent();
+		for (int i = 0; i < skills.size(); i++) {
+			if (skills.get(i).name.equals(skillName)) {
+				return skills.get(i);
 			}
 		}
 		return null;
@@ -34,5 +35,9 @@ public class Project {
 	}
 	public void addidx(int[] idx) {
 		this.idx = idx;
+	}
+	@Override
+	public int compareTo(Project o) {
+		return o.sortPoint > this.sortPoint ? 1 : -1;
 	}
 }
